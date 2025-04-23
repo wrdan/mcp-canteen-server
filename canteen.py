@@ -198,6 +198,7 @@ async def get_canteen_data(start_date: str = None, end_date: str = None, period:
         
         return f"""
 餐厅就餐人数统计 ({title}):
+日期范围: {start_date} 至 {end_date}
 早餐人数: {morning_count} 人
 午餐人数: {afternoon_count} 人
 总计: {total_count} 人
