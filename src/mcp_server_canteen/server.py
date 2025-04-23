@@ -115,19 +115,25 @@ def convert_date_format(date_str: str) -> str:
         "%m/%d",  # 04/01
     ]
     
+    # 清理输入字符串
+    date_str = date_str.strip()
+    
+    # 处理"号"的情况
+    if "号" in date_str:
+        date_str = date_str.replace("号", "日")
+    
+    # 处理没有年份的情况
+    if "年" not in date_str:
+        current_year = datetime.now().year
+        if "月" in date_str:
+            date_str = f"{current_year}年{date_str}"
+        elif "-" in date_str:
+            date_str = f"{current_year}-{date_str}"
+        elif "/" in date_str:
+            date_str = f"{current_year}/{date_str}"
+    
     for fmt in date_formats:
         try:
-            # 如果是没有年份的格式，添加当前年份
-            if fmt in ["%m月%d日", "%m-%d", "%m/%d"]:
-                current_year = datetime.now().year
-                if fmt == "%m月%d日":
-                    date_str = f"{current_year}年{date_str}"
-                elif fmt == "%m-%d":
-                    date_str = f"{current_year}-{date_str}"
-                elif fmt == "%m/%d":
-                    date_str = f"{current_year}/{date_str}"
-                fmt = "%Y年%m月%d日" if "月" in date_str else "%Y-%m-%d"
-            
             date = datetime.strptime(date_str, fmt)
             return date.strftime("%Y%m%d")
         except ValueError:
