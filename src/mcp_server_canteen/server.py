@@ -105,7 +105,8 @@ async def get_canteen_data(start_date: str = None, end_date: str = None, period:
     if period:
         start_date, end_date = get_relative_dates(period)
     elif not start_date or not end_date:
-        raise ValueError("必须提供开始日期和结束日期，或者指定时间范围")
+        # 如果没有提供日期参数，默认查询今天的数据
+        start_date, end_date = get_relative_dates('today')
     
     if not all(validate_date(date) for date in [start_date, end_date]):
         raise ValueError("日期格式不正确，请使用YYYYMMDD格式")
