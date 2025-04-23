@@ -96,6 +96,45 @@ def validate_date(date_str: str) -> bool:
     except ValueError:
         return False
 
+def convert_date_format(date_str: str) -> str:
+    """将各种日期格式转换为YYYYMMDD格式"""
+    if not date_str:
+        return None
+        
+    # 如果已经是YYYYMMDD格式，直接返回
+    if len(date_str) == 8 and date_str.isdigit():
+        return date_str
+        
+    # 尝试不同的日期格式
+    date_formats = [
+        "%Y-%m-%d",  # 2024-04-01
+        "%Y/%m/%d",  # 2024/04/01
+        "%Y年%m月%d日",  # 2024年04月01日
+        "%m月%d日",  # 04月01日
+        "%m-%d",  # 04-01
+        "%m/%d",  # 04/01
+    ]
+    
+    for fmt in date_formats:
+        try:
+            # 如果是没有年份的格式，添加当前年份
+            if fmt in ["%m月%d日", "%m-%d", "%m/%d"]:
+                current_year = datetime.now().year
+                if fmt == "%m月%d日":
+                    date_str = f"{current_year}年{date_str}"
+                elif fmt == "%m-%d":
+                    date_str = f"{current_year}-{date_str}"
+                elif fmt == "%m/%d":
+                    date_str = f"{current_year}/{date_str}"
+                fmt = "%Y年%m月%d日" if "月" in date_str else "%Y-%m-%d"
+            
+            date = datetime.strptime(date_str, fmt)
+            return date.strftime("%Y%m%d")
+        except ValueError:
+            continue
+            
+    raise ValueError(f"无法识别的日期格式: {date_str}")
+
 # 初始化FastMCP服务器
 mcp = FastMCP("canteen", log_level="INFO")
 
@@ -107,6 +146,10 @@ async def get_canteen_data(start_date: str = None, end_date: str = None, period:
     elif not start_date or not end_date:
         # 如果没有提供日期参数，默认查询今天的数据
         start_date, end_date = get_relative_dates('today')
+    else:
+        # 转换日期格式
+        start_date = convert_date_format(start_date)
+        end_date = convert_date_format(end_date)
     
     if not all(validate_date(date) for date in [start_date, end_date]):
         raise ValueError("日期格式不正确，请使用YYYYMMDD格式")
