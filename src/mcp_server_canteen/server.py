@@ -67,7 +67,8 @@ def get_relative_dates(period: str) -> Tuple[str, str]:
         last_day_last_month = today.replace(day=1) - timedelta(days=1)
         return (first_day_last_month.strftime('%Y%m%d'), last_day_last_month.strftime('%Y%m%d'))
     else:
-        raise ValueError(f"不支持的时间范围: {period}")
+        logger.warning(f"不支持的时间范围: {period}，将使用今天的数据")
+        return (today.strftime('%Y%m%d'), today.strftime('%Y%m%d'))
 
 async def make_api_request(url: str) -> Dict[str, Any]:
     """向API发送请求并处理错误"""
@@ -147,8 +148,15 @@ mcp = FastMCP("canteen", log_level="INFO")
 @mcp.tool()
 async def get_canteen_data(start_date: str = None, end_date: str = None, period: str = None) -> str:
     """获取餐厅就餐人数数据"""
-    if period:
+    valid_periods = ['today', 'yesterday', 'day_before_yesterday', 'this_week', 'last_week', 'this_month', 'last_month']
+    
+    if period and period in valid_periods:
         start_date, end_date = get_relative_dates(period)
+    elif period:
+        logger.warning(f"不支持的时间范围: {period}，将使用指定的日期范围")
+        if not start_date or not end_date:
+            # 如果没有指定日期范围，则使用今天
+            start_date, end_date = get_relative_dates('today')
     elif not start_date or not end_date:
         # 如果没有提供日期参数，默认查询今天的数据
         start_date, end_date = get_relative_dates('today')
