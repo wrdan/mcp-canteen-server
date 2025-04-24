@@ -2,6 +2,10 @@
 
 本服务用于查询职工餐厅就餐人数数据，提供指定日期范围内的早餐和午餐就餐人数统计。
 
+<a href="https://glama.ai/mcp/servers/@wrdan/mcp-canteen-server">
+  <img width="380" height="200" src="https://glama.ai/mcp/servers/@wrdan/mcp-canteen-server/badge" alt="Canteen Server MCP server" />
+</a>
+
 docs: https://modelcontextprotocol.io/quickstart/server
 
 ## 安装
