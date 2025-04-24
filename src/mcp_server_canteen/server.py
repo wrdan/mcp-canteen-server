@@ -106,6 +106,29 @@ def convert_date_format(date_str: str) -> str:
     if len(date_str) == 8 and date_str.isdigit():
         return date_str
         
+    # 处理相对日期
+    today = datetime.now()
+    if date_str.lower() == 'today':
+        return today.strftime('%Y%m%d')
+    elif date_str.lower() == 'yesterday':
+        yesterday = today - timedelta(days=1)
+        return yesterday.strftime('%Y%m%d')
+    elif date_str.lower() == 'day_before_yesterday':
+        day_before_yesterday = today - timedelta(days=2)
+        return day_before_yesterday.strftime('%Y%m%d')
+    elif date_str.lower() == 'this_week':
+        monday = today - timedelta(days=today.weekday())
+        return monday.strftime('%Y%m%d')
+    elif date_str.lower() == 'last_week':
+        last_monday = today - timedelta(days=today.weekday() + 7)
+        return last_monday.strftime('%Y%m%d')
+    elif date_str.lower() == 'this_month':
+        first_day = today.replace(day=1)
+        return first_day.strftime('%Y%m%d')
+    elif date_str.lower() == 'last_month':
+        first_day_last_month = (today.replace(day=1) - timedelta(days=1)).replace(day=1)
+        return first_day_last_month.strftime('%Y%m%d')
+        
     # 尝试不同的日期格式
     date_formats = [
         "%Y-%m-%d",  # 2024-04-01
