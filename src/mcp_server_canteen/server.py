@@ -106,7 +106,7 @@ def convert_date_format(date_str: str) -> str:
     if len(date_str) == 8 and date_str.isdigit():
         return date_str
         
-    # 处理相对日期
+    # 处理相对日期（只处理简单的相对日期）
     today = datetime.now()
     if date_str.lower() == 'today':
         return today.strftime('%Y%m%d')
@@ -116,36 +116,7 @@ def convert_date_format(date_str: str) -> str:
     elif date_str.lower() == 'day_before_yesterday':
         day_before_yesterday = today - timedelta(days=2)
         return day_before_yesterday.strftime('%Y%m%d')
-    elif date_str.lower() == 'this_week':
-        monday = today - timedelta(days=today.weekday())
-        return monday.strftime('%Y%m%d')
-    elif date_str.lower() == 'last_week':
-        last_monday = today - timedelta(days=today.weekday() + 7)
-        return last_monday.strftime('%Y%m%d')
-    elif date_str.lower() == 'this_month':
-        first_day = today.replace(day=1)
-        return first_day.strftime('%Y%m%d')
-    elif date_str.lower() == 'last_month':
-        first_day_last_month = (today.replace(day=1) - timedelta(days=1)).replace(day=1)
-        return first_day_last_month.strftime('%Y%m%d')
         
-    # 尝试不同的日期格式
-    date_formats = [
-        "%Y-%m-%d",  # 2024-04-01
-        "%Y/%m/%d",  # 2024/04/01
-        "%Y.%m.%d",  # 2024.04.01
-        "%Y年%m月%d日",  # 2024年04月01日
-        "%Y年%m月%d号",  # 2024年04月01号
-        "%m月%d日",  # 04月01日
-        "%m月%d号",  # 04月01号
-        "%m-%d",  # 04-01
-        "%m/%d",  # 04/01
-        "%m.%d",  # 04.01
-        "%Y-%m",  # 2024-04
-        "%Y/%m",  # 2024/04
-        "%Y年%m月",  # 2024年04月
-    ]
-    
     # 清理输入字符串
     date_str = date_str.strip()
     
@@ -153,35 +124,49 @@ def convert_date_format(date_str: str) -> str:
     if "号" in date_str:
         date_str = date_str.replace("号", "日")
     
-    # 处理没有年份的情况
-    if "年" not in date_str and "-" not in date_str and "/" not in date_str and "." not in date_str:
-        current_year = datetime.now().year
-        if "月" in date_str:
-            date_str = f"{current_year}年{date_str}"
-        elif "-" in date_str:
-            date_str = f"{current_year}-{date_str}"
-        elif "/" in date_str:
-            date_str = f"{current_year}/{date_str}"
-        elif "." in date_str:
-            date_str = f"{current_year}.{date_str}"
+    # 尝试不同的日期格式
+    date_formats = [
+        # 完整日期格式
+        "%Y-%m-%d",  # 2024-04-01
+        "%Y/%m/%d",  # 2024/04/01
+        "%Y.%m.%d",  # 2024.04.01
+        "%Y年%m月%d日",  # 2024年04月01日
+        # 无年份格式
+        "%m月%d日",  # 04月01日
+        "%m-%d",  # 04-01
+        "%m/%d",  # 04/01
+        "%m.%d",  # 04.01
+        # 年月格式
+        "%Y-%m",  # 2024-04
+        "%Y/%m",  # 2024/04
+        "%Y年%m月",  # 2024年04月
+    ]
     
-    # 处理只有年月的情况
-    if "日" not in date_str and "号" not in date_str:
-        if "月" in date_str:
-            date_str = f"{date_str}01日"
-        elif "-" in date_str:
-            date_str = f"{date_str}-01"
-        elif "/" in date_str:
-            date_str = f"{date_str}/01"
-        elif "." in date_str:
-            date_str = f"{date_str}.01"
+    current_year = datetime.now().year
     
     for fmt in date_formats:
         try:
             date = datetime.strptime(date_str, fmt)
+            # 如果是无年份格式，添加当前年份
+            if fmt in ["%m月%d日", "%m-%d", "%m/%d", "%m.%d"]:
+                date = date.replace(year=current_year)
+            # 如果是年月格式，添加当月第一天
+            elif fmt in ["%Y-%m", "%Y/%m", "%Y年%m月"]:
+                date = date.replace(day=1)
             return date.strftime("%Y%m%d")
         except ValueError:
             continue
+            
+    # 如果所有格式都失败，尝试直接解析数字
+    try:
+        # 移除所有非数字字符
+        clean_date = ''.join(filter(str.isdigit, date_str))
+        if len(clean_date) == 8:
+            # 验证日期是否有效
+            datetime.strptime(clean_date, "%Y%m%d")
+            return clean_date
+    except ValueError:
+        pass
             
     raise ValueError(f"无法识别的日期格式: {date_str}")
 
