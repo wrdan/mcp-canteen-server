@@ -110,10 +110,17 @@ def convert_date_format(date_str: str) -> str:
     date_formats = [
         "%Y-%m-%d",  # 2024-04-01
         "%Y/%m/%d",  # 2024/04/01
+        "%Y.%m.%d",  # 2024.04.01
         "%Y年%m月%d日",  # 2024年04月01日
+        "%Y年%m月%d号",  # 2024年04月01号
         "%m月%d日",  # 04月01日
+        "%m月%d号",  # 04月01号
         "%m-%d",  # 04-01
         "%m/%d",  # 04/01
+        "%m.%d",  # 04.01
+        "%Y-%m",  # 2024-04
+        "%Y/%m",  # 2024/04
+        "%Y年%m月",  # 2024年04月
     ]
     
     # 清理输入字符串
@@ -124,7 +131,7 @@ def convert_date_format(date_str: str) -> str:
         date_str = date_str.replace("号", "日")
     
     # 处理没有年份的情况
-    if "年" not in date_str:
+    if "年" not in date_str and "-" not in date_str and "/" not in date_str and "." not in date_str:
         current_year = datetime.now().year
         if "月" in date_str:
             date_str = f"{current_year}年{date_str}"
@@ -132,6 +139,19 @@ def convert_date_format(date_str: str) -> str:
             date_str = f"{current_year}-{date_str}"
         elif "/" in date_str:
             date_str = f"{current_year}/{date_str}"
+        elif "." in date_str:
+            date_str = f"{current_year}.{date_str}"
+    
+    # 处理只有年月的情况
+    if "日" not in date_str and "号" not in date_str:
+        if "月" in date_str:
+            date_str = f"{date_str}01日"
+        elif "-" in date_str:
+            date_str = f"{date_str}-01"
+        elif "/" in date_str:
+            date_str = f"{date_str}/01"
+        elif "." in date_str:
+            date_str = f"{date_str}.01"
     
     for fmt in date_formats:
         try:
@@ -160,10 +180,13 @@ async def get_canteen_data(start_date: str = None, end_date: str = None, period:
     elif not start_date or not end_date:
         # 如果没有提供日期参数，默认查询今天的数据
         start_date, end_date = get_relative_dates('today')
-    else:
-        # 转换日期格式
+    
+    # 转换日期格式
+    try:
         start_date = convert_date_format(start_date)
         end_date = convert_date_format(end_date)
+    except ValueError as e:
+        raise ValueError(f"日期格式转换失败: {str(e)}")
     
     if not all(validate_date(date) for date in [start_date, end_date]):
         raise ValueError("日期格式不正确，请使用YYYYMMDD格式")
