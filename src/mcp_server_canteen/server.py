@@ -211,6 +211,7 @@ async def get_canteen_data(start_date: str = None, end_date: str = None, period:
     except ValueError as e:
         raise ValueError(f"日期格式转换失败: {str(e)}")
     
+    # 验证转换后的日期格式
     if not all(validate_date(date) for date in [start_date, end_date]):
         raise ValueError("日期格式不正确，请使用YYYYMMDD格式")
     
