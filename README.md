@@ -1,3 +1,5 @@
+[![MseeP.ai Security Assessment Badge](https://mseep.net/pr/wrdan-mcp-server-canteen-badge.png)](https://mseep.ai/app/wrdan-mcp-server-canteen)
+
 # 餐厅数据 MCP Server
 
 本服务用于查询职工餐厅就餐人数数据，提供指定日期范围内的早餐和午餐就餐人数统计。
